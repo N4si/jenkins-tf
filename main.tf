@@ -1,5 +1,5 @@
 resource "aws_instance" "jenkins" {
-  ami           = "ami-0166fe664262f664c" # Amazon Linux 2 AMI
+  ami           = "ami-0123456" # Amazon Linux 2 AMI
   instance_type = "t2.micro"
   key_name      = var.key_name
 
@@ -20,7 +20,7 @@ resource "aws_security_group" "jenkins" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["103.163.198.122/32"] # Your IP for SSH access
+    cidr_blocks = ["100.100.100.122/32"] # Your IP for SSH access
   }
 
   ingress {
@@ -49,4 +49,19 @@ resource "aws_s3_bucket" "jenkins_artifacts" {
 
 resource "random_id" "bucket_id" {
   byte_length = 8
+}
+
+
+resource "aws_s3_bucket_acl" "s3_bucket_acl" {
+  bucket = aws_s3_bucket.jenkins_artifacts.id
+  acl    = "private"
+  depends_on = [aws_s3_bucket_ownership_controls.s3_bucket_acl_ownership]
+}
+
+# Resource to avoid error "AccessControlListNotSupported: The bucket does not allow ACLs"
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_ownership" {
+  bucket = aws_s3_bucket.jenkins_artifacts.id
+  rule {
+    object_ownership = "ObjectWriter"
+  }
 }
