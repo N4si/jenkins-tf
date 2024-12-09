@@ -2,7 +2,6 @@ import json
 import boto3
 import psycopg2
 from botocore.exceptions import ClientError
-import os
 
 def get_secret(secret_name):
     """Retrieve the secret value from AWS Secrets Manager."""
@@ -24,12 +23,13 @@ def get_secret(secret_name):
 
 def lambda_handler(event, context):
     """Lambda function handler to connect to RDS and execute a query."""
-    secret_name = "your-secret-name"  # Replace with your secret name in Secrets Manager
+    secret_name = "yoursecret"  # Name of your secret in Secrets Manager
     secret = get_secret(secret_name)
     
     # RDS database credentials from the secret
     db_host = secret['host']
-    db_name = secret['dbname']
+    db_port = secret['port']
+    db_name = "your_db_name"  # Replace with your actual DB name
     db_user = secret['username']
     db_password = secret['password']
     
@@ -37,6 +37,7 @@ def lambda_handler(event, context):
     try:
         connection = psycopg2.connect(
             host=db_host,
+            port=db_port,
             dbname=db_name,
             user=db_user,
             password=db_password
@@ -44,7 +45,7 @@ def lambda_handler(event, context):
         cursor = connection.cursor()
         
         # Example query: Replace with your actual SQL query
-        query = "SELECT * FROM your_table_name LIMIT 10;"
+        query = "SELECT * FROM your_table_name LIMIT 10;"  # Adjust query
         cursor.execute(query)
         
         # Fetch query results
